@@ -1,0 +1,213 @@
+---
+title: "Assignment_1"
+author: "Vamshee Deepak Goud Katta"
+date: "10/20/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Reading data file
+
+```{r}
+library(dplyr)
+library(readr)
+Retail <- read.csv("Online_Retail.csv")
+
+```
+
+# 1. Breakdown of transactions by country
+
+```{r}
+
+Retail1  <- as.data.frame(table(Retail$Country))
+Percentage <- Retail1$Freq/NROW(Retail) * 100
+Retail1 <- cbind(Retail1, Percentage) 
+names(Retail1) <- c("Country","Total Transactions","Percentage")
+Retail1[Retail1$Percentage > 1,]
+
+```
+
+# 2. Creating variable 'TransactionValue'
+
+```{r}
+
+TransactionValue <- Retail$Quantity*Retail$UnitPrice
+Retail2 <- cbind(Retail, TransactionValue)
+head(Retail2)
+
+```
+
+# 3. Breakdown of transaction values by countries exceeding 130000
+
+```{r}
+
+Retail3 <- Retail2%>%group_by(Country)%>%
+  summarise(Total=sum(TransactionValue))
+Retail3[Retail3$Total>130000,]
+
+```
+# 4. Golden Questions
+
+## Converting ‘InvoiceDate’ into a POSIXlt object
+```{r}
+
+Retail4 <- Retail
+Temp=strptime(Retail4$InvoiceDate,format='%m/%d/%Y %H:%M',tz='GMT')
+Retail4$New_InvoiceDate <- as.Date(Temp)
+Retail4$New_InvoiceDate[20000]- Retail4$New_InvoiceDate[10]
+Retail4$Invoice_Day = weekdays(Retail4$New_InvoiceDate)
+Retail4$Invoice_Hour = as.numeric(format(Temp, "%H"))
+Retail4$Invoice_Month = as.numeric(format(Temp, "%m"))
+
+```
+
+## a) Percentage of transactions (by numbers) by days of the week
+
+```{r}
+
+Retail4%>%group_by(Invoice_Day)%>%
+  summarise(count=n())%>%
+  mutate(Percentage=count/nrow(Retail4)* 100)
+
+```
+
+## b) Percentage of transactions (by transaction volume) by days of the week
+
+```{r}
+
+Retail4%>%group_by(Invoice_Day)%>%
+  summarise(Total=sum(TransactionValue))%>%
+  mutate(Percentage=Total/sum(Total)*100)
+
+```
+
+## c) Percentage of transactions (by transaction volume) by month of the year
+
+```{r}
+
+Retail4%>%group_by(Invoice_Month)%>%
+  summarise(Total=sum(TransactionValue))%>%
+  mutate(Percentage=Total/sum(Total)*100)
+
+```
+
+## d) Date with the highest number of transactions from Australia
+
+```{r}
+
+Retail4%>%
+filter(Country=="Australia")%>%
+group_by(New_InvoiceDate)%>%
+tally(sort = TRUE)%>%  
+filter(n==max(n))
+
+```
+
+# 5. Histogram of transaction values from Germany
+
+```{r}
+
+Retail4%>%
+group_by(Country)%>%
+filter(Country=="Germany")%>%
+group_by(Invoice_Month)%>%
+summarise(Total = sum(TransactionValue))-> Germany
+hist(Germany$Total, main = "Transaction Values", xlab = "Total Value", ylab = "Months")
+
+```
+
+# 6. Customer with highest number of transactions
+
+```{r}
+
+Retail%>%
+group_by(CustomerID)%>%
+tally(sort = TRUE)%>%
+filter(!is.na(CustomerID))%>%  
+filter(n==max(n))
+
+```
+
+# Most Valuable Customer
+
+```{r}
+
+Retail2%>%
+group_by(CustomerID)%>%
+summarise(Total=sum(TransactionValue))%>%
+filter(!is.na(CustomerID))%>%  
+filter(Total == max(Total))
+
+```
+
+# 7. Percentage of missing values
+
+```{r}
+
+colMeans(is.na(Retail2) *100)
+
+```
+
+# 8. Number of transactions with missing CustomerID records by countries
+
+```{r}
+
+Retail2%>%
+  group_by(Country)%>%
+  summarise(Total=nrow(Retail2[is.na(Retail2$CustomerID),]))
+
+```
+
+# 10. Return rate for the French customers
+
+```{r}
+
+Retail10c <- Retail2%>%
+  filter(Country=="France", Quantity<0)%>%
+  count
+Retail10t <- Retail2%>%
+  filter(Country=="France")%>%
+  count
+Retail10 <- (Retail10c$n / Retail10t$n) * 100
+Retail10
+
+```
+
+# 11. Product with highest revenue
+
+```{r}
+
+Retail2%>%
+  group_by(Description)%>%
+  summarise(Total=sum(TransactionValue))%>%
+  arrange(desc(Total)) %>%
+  head(100)
+
+```
+## Postage is not an actual product. Hence the product with highest revenue is 'REGENCY CAKESTAND 3 TIER'
+
+# 12. Unique customers in the dataset
+
+```{r}
+
+Retail12 <- unique(Retail2$CustomerID, fromLast = FALSE,nmax = NA)
+length(Retail12)
+  
+```
+
+# 9. Average number of days between consecutive shopping
+
+```{r include=FALSE}
+
+#Retail4 %>%
+ # select(CustomerID, New_InvoiceDate) %>%
+  #arrange(CustomerID, New_InvoiceDate) %>%
+  #group_by(CustomerID) %>%
+  #mutate(Previousorder = lag(New_InvoiceDate, 1),
+  #DaysSincePrevorder = ifelse(!is.na(lag(New_InvoiceDate, 1)), diff(date(New_InvoiceDate), date(lag(New_InvoiceDate, 1))), NA)) %>%
+#  summarise(AvgDays = mean(DaysSincePrevPurchase, na.rm = TRUE))
+
+```
