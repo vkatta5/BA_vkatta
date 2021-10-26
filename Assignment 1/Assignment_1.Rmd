@@ -200,14 +200,3 @@ length(Retail12)
 
 # 9. Average number of days between consecutive shopping
 
-```{r include=FALSE}
-
-#Retail4 %>%
- # select(CustomerID, New_InvoiceDate) %>%
-  #arrange(CustomerID, New_InvoiceDate) %>%
-  #group_by(CustomerID) %>%
-  #mutate(Previousorder = lag(New_InvoiceDate, 1),
-  #DaysSincePrevorder = ifelse(!is.na(lag(New_InvoiceDate, 1)), diff(date(New_InvoiceDate), date(lag(New_InvoiceDate, 1))), NA)) %>%
-#  summarise(AvgDays = mean(DaysSincePrevPurchase, na.rm = TRUE))
-
-```
