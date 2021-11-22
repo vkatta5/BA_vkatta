@@ -1,0 +1,164 @@
+---
+title: "Assignment - 2"
+author: "Vamshee Deepak Goud Katta"
+date: "11/17/2021"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Creating variables.
+
+```{r}
+
+set.seed(123)
+X=runif(100)*10
+Y=X*4+3.45
+Y=rnorm(100)*0.29*Y+Y
+
+```
+
+### a) Plotting Y against X.
+
+```{r}
+
+plot(X,Y)
+
+# Based on the data in graph, we can fit a linear model to explain Y based on X.
+
+```
+
+### b) Constructing a simple linear model of Y based on X.
+
+```{r}
+
+Model = lm(Y~X)
+summary(Model)
+
+Model$coefficients
+ 
+```
+
+The following equation explains Y based on X:
+
+Y = (3.945235*X) + 3.274645
+
+The accuracy of the model is 0.7038.
+
+### c) Relation of Coefficient of Determination to the correlation coefficient of X and Y.
+
+ A. R2 is the squared value of the coorelation cofficient between x and y where as, regression is based on one variable.
+
+```{r}
+
+cor(X,Y)^2
+
+# From the above result, we can notice that it's the same value as R-squared '0.7038'.
+
+```
+
+## 2. Using ‘mtcars’ dataset.
+
+```{r}
+
+head(mtcars) 
+
+```
+
+### a) Constructing simple linear models using mtcars data to determine better estimator of Horse Power (hp) or cars.
+
+```{r}
+
+James <- lm(mtcars$hp~mtcars$wt, data = mtcars)
+summary(James)
+
+Chris <- lm(mtcars$hp~mtcars$mpg, data = mtcars)
+summary(Chris)
+
+```
+
+As per the linear models constructed using mtcars dataset, Chris is right to think that fuel consumption expressed in miles per gallon (mpg) is a better estimator of a car's horse power (hp).
+
+Accuracy of Chris' model is 0.6024 which is higher compared to James' model which is only 0.4339
+
+ 
+
+### b) Building linear model that uses the number of cylinders (cyl) and the mile per gallon (mpg) values of a car to predict the car HorsePower (hp).
+
+```{r}
+
+Model2 <- lm(mtcars$hp~mtcars$mpg+mtcars$cyl, data = mtcars)
+summary(Model2)
+
+Model2$coefficients
+
+HP <- (Model2$coefficients[2]*22) + (Model2$coefficients[3]*4) + Model2$coefficients[1]
+HP
+ 
+```
+The estimated Horse Power of a car with 4 cylinders giving 22 miles per gallon (mpg) is 88.93618
+
+## 3.Boston Housing
+
+### a) Building linear model to estimate the median value of owner-occupied homes (medv).
+
+```{r}
+
+library(mlbench)
+data(BostonHousing)
+ 
+Model3 <- lm(formula = BostonHousing$medv ~ BostonHousing$crim + BostonHousing$zn + BostonHousing$ptratio + BostonHousing$chas, data = BostonHousing)
+summary(Model3)
+ 
+```
+
+The accuracy of this linear model is very low as the value of R2 is very low (0.3599).
+
+### b) Using the estimated coefficient.
+
+### I. Determining more expensive of the identical houses based on relation to the Chas River.
+
+```{r}
+
+summary(Model3)
+
+```
+
+Based on the above summary, the estimate of the  variation of identical houses in expense is $4.58k as the change in value of house that bounds chas river and that doesn't is 1.
+
+### II. Determining the more expensive of the identical houses along with the value based on pupil-teacher ratio in the neighborhoods.
+
+```{r}
+
+# Estimate of the variation of identical houses in expense can be found by multiplying the estimate coefficient with the difference in pupil-teacher ratio among them.
+
+X <- -1.49367*(15-18)
+X
+
+```
+
+### c) Determining statistically important variables.
+
+```{r}
+
+summary(Model3)
+
+```
+
+Based on the above result, P-value for the model is <0.05. Hence, none of the variables are statistically important.
+
+### d) Using the anova analysis to determine the order of importance of variables.
+
+```{r}
+
+anova(Model3)
+ 
+```
+
+According to the analysis, the order of importance of the variables can be interpreted as
+
+crim > ptratio > zn > chas
